@@ -17,6 +17,7 @@ from pathlib import Path
 from behave import fixture, use_fixture
 from behave.runner import Context
 
+COMPOSITION_TESTER_FUNCTIONS_FILE_ON_CI = "COMPOSITION_TESTER_FUNCTIONS_FILE"
 
 @fixture
 def setup_base_path(ctx: Context, feature):
@@ -88,15 +89,15 @@ def setup_functions_filepath(ctx: Context):
     # By default, functions files are stored in the same directory as the features
     ctx.functions_folder_path = all_features_directory
     if on_ci():
-        print("Running on CI!")
+        # print("Running on CI!")
         ctx.on_ci = True
         # If running on CI, the default functions file is specified by the environment variable "COMPOSITION_TESTER_FUNCTIONS_FILE"
         ci_functions_file = os.environ[
-            "COMPOSITION_TESTER_FUNCTIONS_FILE"
+            COMPOSITION_TESTER_FUNCTIONS_FILE_ON_CI
         ]  # e.g. "functions-ci.yaml"
         functions_filepath = all_features_directory / ci_functions_file
     else:
-        print("Running locally!")
+        # print("Running locally!")
         ctx.on_ci = False
         # The default functions file used for testing is "functions.yaml"
         functions_filepath = all_features_directory / "functions.yaml"
@@ -154,4 +155,32 @@ def before_feature(context, feature):
 
 def on_ci():
     # check special environment variable to determine if running locally or in CI pipeline (e.g. GITLAB_CI)
-    return "COMPOSITION_TESTER_FUNCTIONS_FILE" in os.environ
+    return COMPOSITION_TESTER_FUNCTIONS_FILE_ON_CI in os.environ
+
+def before_scenario(context: Context, scenario):
+    """
+    If debug mode is enabled, create an 'execution' folder for the current
+    scenario inside the feature folder, and store that path in context.
+    Otherwise, skip creating any new folder.
+    """
+    if not context.debug_mode:
+        context.execution_folder = None
+        return
+
+    base_path = context.base_path if isinstance(context.base_path, Path) else Path(context.base_path)
+    execution_dir = base_path / "execution"
+    execution_dir.mkdir(parents=True, exist_ok=True)
+    
+    scenario_name_safe = "".join(c if c.isalnum() or c in ('-', '_') else "_" for c in scenario.name)
+    scenario_dir = execution_dir / scenario_name_safe
+    scenario_dir.mkdir(parents=True, exist_ok=True)
+    
+    context.execution_folder = scenario_dir
+
+def after_scenario(context: Context, scenario):
+    """
+    If debug mode is enabled, you can log the folder name or perform any additional
+    cleanup. Otherwise, nothing happens.
+    """
+    if context.debug_mode and context.execution_folder:
+        print(f"DEBUG MODE ON - Scenario '{scenario.name}' dumps stored in: {context.execution_folder}")
