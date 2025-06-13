@@ -20,9 +20,6 @@ spec:
             - "/app/allure-results"
             - "-f"
             - "pretty"
-          envFrom:
-          - configMapRef:
-              name: composition-tester
           volumeMounts:
             - name: test-volume
               mountPath: /app/test

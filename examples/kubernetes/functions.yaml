@@ -50,7 +50,7 @@ spec:
       containers:
         - name: function-auto-ready
           image: xpkg.upbound.io/crossplane-contrib/function-auto-ready:v0.3.0
-          args: ["--insecure", "--address=:9444"]
+          args: ["--insecure", "--address=:9443"]
           ports:
             - containerPort: 9443
 ---
