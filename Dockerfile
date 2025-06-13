@@ -1,8 +1,8 @@
-ARG PYTHON_VERSION
+ARG PYTHON_VERSION=3.12-slim
 
 FROM python:${PYTHON_VERSION}
 
-ARG CROSSPLANE_VERSION
+ARG CROSSPLANE_VERSION=v1.17.3
 
 RUN apt-get update && \
     apt-get install -y curl && \
