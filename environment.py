@@ -17,8 +17,6 @@ from pathlib import Path
 from behave import fixture, use_fixture
 from behave.runner import Context
 
-COMPOSITION_TESTER_FUNCTIONS_FILE_ON_CI = "COMPOSITION_TESTER_FUNCTIONS_FILE"
-
 @fixture
 def setup_base_path(ctx: Context, feature):
     """Retrieve the base path for the feature file. The base path is the path to the
@@ -89,11 +87,11 @@ def setup_functions_filepath(ctx: Context):
     # By default, functions files are stored in the same directory as the features
     ctx.functions_folder_path = all_features_directory
     if on_ci():
-        # print("Running on CI!")
+        print("Running on CI!")
         ctx.on_ci = True
         # If running on CI, the default functions file is specified by the environment variable "COMPOSITION_TESTER_FUNCTIONS_FILE"
         ci_functions_file = os.environ[
-            COMPOSITION_TESTER_FUNCTIONS_FILE_ON_CI
+            "COMPOSITION_TESTER_FUNCTIONS_FILE"
         ]  # e.g. "functions-ci.yaml"
         functions_filepath = all_features_directory / ci_functions_file
     else:
@@ -155,7 +153,7 @@ def before_feature(context, feature):
 
 def on_ci():
     # check special environment variable to determine if running locally or in CI pipeline (e.g. GITLAB_CI)
-    return COMPOSITION_TESTER_FUNCTIONS_FILE_ON_CI in os.environ
+    return "COMPOSITION_TESTER_FUNCTIONS_FILE" in os.environ
 
 def before_scenario(context: Context, scenario):
     """
